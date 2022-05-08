@@ -80,10 +80,12 @@ public class NcpMigrator {
 
                         String serverInstanceType = document.getElementsByTagName("serverInstanceType").item(0).getTextContent();
                         switch (serverInstanceType) {
-                            case "STAND" -> serverInfo.instanceType = "general";
-
-
-                            default -> serverInfo.instanceType = "default";
+                            case "STAND":
+                                serverInfo.instanceType = "general";
+                                break;
+                            default:
+                                serverInfo.instanceType = "default";
+                                break;
                         }
 
                         serverInfo.memory = Long.parseLong(eElement.getElementsByTagName("memorySize").item(0).getTextContent())/1024/1024/1024;
@@ -141,11 +143,21 @@ public class NcpMigrator {
 
         String ncpInstanceType = "";
         switch (instanceType) {
-            case "general" -> ncpInstanceType = "STAND";
-            case "computing" -> ncpInstanceType = "HICPU";
-            case "memory" -> ncpInstanceType = "HIMEM";
-            case "intensive" -> ncpInstanceType = "CPU";
-            case "storage" -> ncpInstanceType = "NONE";
+            case "general":
+                ncpInstanceType = "STAND";
+                break;
+            case "computing":
+                ncpInstanceType = "HICPU";
+                break;
+            case "memory":
+                ncpInstanceType = "HIMEM";
+                break;
+            case "intensive":
+                ncpInstanceType = "CPU";
+                break;
+            case "storage":
+                ncpInstanceType = "NONE";
+                break;
         }
 
         // 응답 xml 파싱

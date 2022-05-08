@@ -105,18 +105,19 @@ public class AwsMigrator {
             serverInfo.osArchitecture = image.getArchitecture();
             serverInfo.osName = splitImageName[0];
             switch (serverInfo.osName) {
-                case "Windows_Server" -> {
+                case "Windows_Server":
                     serverInfo.osName = "Windows Server";
                     serverInfo.osVersion = splitImageName[1];
-                }
-                case "ubuntu" -> {
+                    break;
+                case "ubuntu":
                     serverInfo.osName = "Ubuntu Server";
                     serverInfo.osVersion = splitImageName[2];
-                }
-                case "amzn", "amzn2" -> {
+                    break;
+                case "amzn":
+                case "amaz2":
                     serverInfo.osName = "Amazon";
                     serverInfo.osVersion = splitImageName[3];
-                }
+                    break;
             }
 
             // 인스턴스 타입 (DescribeInstanceTypesRequest)
@@ -129,12 +130,68 @@ public class AwsMigrator {
             serverInfo.memory = instanceTypeInfo.getMemoryInfo().getSizeInMiB() / 1024;
 
             switch (instanceTypeInfo.getInstanceType().split("\\.")[0]) {
-                case "Mac", "T4g", "T3", "T3a", "t2", "M6g", "M6i", "M5", "M5a", "M5n", "M5zn", "M4", "A1" -> serverInfo.instanceType = "general";
-                case "C6g", "C6gn", "C6i", "C5", "C5a", "C5n", "C4" -> serverInfo.instanceType = "computing";
-                case "56g", "R5", "R5a", "R5b", "R5n", "R4", "X2gd", "X1e", "X1", "u", "z1d" -> serverInfo.instanceType = "memory";
-                case "P4", "P3", "P2", "P1", "DL1", "Inf1", "G5", "G4dn", "G4ad", "G3", "F1", "VT1" -> serverInfo.instanceType = "intensive";
-                case "I3", "I3en", "D2", "D3", "D3en", "H1" -> serverInfo.instanceType = "storage";
-                default -> serverInfo.instanceType = "default";
+                case "Mac":
+                case "T4g":
+                case "T3":
+                case "T3a":
+                case "t2":
+                case "M6g":
+                case "M6i":
+                case "M5":
+                case "M5a":
+                case "M5n":
+                case "M5zn":
+                case "M4":
+                case "A1":
+                    serverInfo.instanceType = "general";
+                    break;
+                case "C6g":
+                case "C6gn":
+                case "C6i":
+                case "C5":
+                case "C5a":
+                case "C5n":
+                case "C4":
+                    serverInfo.instanceType = "computing";
+                    break;
+                case "56g":
+                case "R5":
+                case "R5a":
+                case "R5b":
+                case "R5n":
+                case "R4":
+                case "X2gd":
+                case "X1e":
+                case "X1":
+                case "u":
+                case "z1d":
+                    serverInfo.instanceType = "memory";
+                    break;
+                case "P4":
+                case "P3":
+                case "P2":
+                case "P1":
+                case "DL1":
+                case "Inf1":
+                case "G5":
+                case "G4dn":
+                case "G4ad":
+                case "G3":
+                case "F1":
+                case "VT1":
+                    serverInfo.instanceType = "intensive";
+                    break;
+                case "I3":
+                case "I3en":
+                case "D2":
+                case "D3":
+                case "D3en":
+                case "H1":
+                    serverInfo.instanceType = "storage";
+                    break;
+                default:
+                    serverInfo.instanceType = "default";
+                    break;
             }
 
             // 리전
@@ -204,9 +261,15 @@ public class AwsMigrator {
         String filterOsVersion = "";
 
         switch (serverInfo.osName) {
-            case "Windows Server" -> filterOsName = "Windows_Server-";
-            case "Ubuntu Server" -> filterOsName = "Ubuntu-";
-            case "Centos" -> filterOsName = "centos";
+            case "Windows Server":
+                filterOsName = "Windows_Server-";
+                break;
+            case "Ubuntu Server":
+                filterOsName = "Ubuntu-";
+                break;
+            case "Centos":
+                filterOsName = "centos";
+                break;
         }
         Filter nameFilter = new Filter().withName("name").withValues(filterOsName+serverInfo.osVersion+"*");
 

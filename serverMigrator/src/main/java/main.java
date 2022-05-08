@@ -18,8 +18,8 @@ public class main {
         AwsMigrator awsMigrator = new AwsMigrator();
         NcpMigrator ncpMigrator = new NcpMigrator();
 
-        String awsAccessKey = "accesskey";
-        String awsSecretKey = "secretkey";
+        String awsAccessKey = "AKIA6CU5MHVS2ZQMCCNC";
+        String awsSecretKey = "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";
         Regions regions = Regions.AP_NORTHEAST_2;
 
         AmazonECR amazonECR = awsMigrator.BuildECRClient(awsAccessKey, awsSecretKey, regions);
@@ -93,8 +93,8 @@ public class main {
 
 
 
-        String naverAccessKey = "accesskey";
-        String naverSecretKey = "secretkey";
+        String naverAccessKey = "peEjtbF0CEY4e8xN9fgi";
+        String naverSecretKey = "gm2dEU9I8bjRGVshHxMFhWEpxmtj0VX2ecmdwn3A";
 
     }
 }
