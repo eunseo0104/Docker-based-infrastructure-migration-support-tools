@@ -23,7 +23,6 @@ public class main {
         Regions regions = Regions.AP_NORTHEAST_2;
 
         AmazonECR amazonECR = awsMigrator.BuildECRClient(awsAccessKey, awsSecretKey, regions);
-        awsMigrator.getlistImageResult(amazonECR);
 
         ServerInfo serverInfo = new ServerInfo();
 
