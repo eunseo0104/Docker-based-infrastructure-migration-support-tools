@@ -19,29 +19,29 @@ import org.json.simple.parser.JSONParser;
 
 public class App {
     public static void main(String[] args){
-    	
+       
         //ncp
         args = new String[3];
-    	
+       
         //docker rmi -f `docker images -q` DOCKER image delete all
         //args[0]: registry name
         //args[1]: access key
         //args[2]: secret key
         
-        args[0] = "";
-        args[1] = "";
-        args[2] = "";
+        args[0] = "testdocker";
+        args[1] = "peEjtbF0CEY4e8xN9fgi";
+        args[2] = "gm2dEU9I8bjRGVshHxMFhWEpxmtj0VX2ecmdwn3A";
         String uri = "/ncr/api/v2/repositories/"+args[0];
         String region = "kr";
         String endpoint = args[0]+"."+region+".ncr.ntruss.com";
 
         //aws
         String[] aws = new String[5];
-        aws[0] = ""; //ECS repository name
-        aws[1] = ""; //AccessKey
-        aws[2] = ""; //SecretKey
-        aws[3] = ""; //region
-        aws[4] = ""; //account id
+        aws[0] = "docker_tutorial"; //ECS repository name
+        aws[1] = "AKIA6CU5MHVS2ZQMCCNC"; //AccessKey
+        aws[2] = "cGNG+1wlIpx8DCapLx5k6M7+uMr/5w4TFXqBjkZc"; //SecretKey
+        aws[3] = "ap-northeast-2"; //region
+        aws[4] = "967771438437"; //account id
 
         StringBuilder response = new StringBuilder();
         try{
@@ -110,7 +110,7 @@ public class App {
         }
     }
     private static String[] downloadImages(String[] args, String endpoint, BufferedReader br) throws Exception{
-    	//result parsing
+       //result parsing
         JSONParser parser = new JSONParser();
         JSONObject jsonObj = (JSONObject)parser.parse(br);
         JSONArray jsonArr = (JSONArray)jsonObj.get("results");
@@ -122,9 +122,9 @@ public class App {
         br = new BufferedReader(new InputStreamReader(p.getInputStream()));
         
         while((s=br.readLine())!=null)
-        	System.out.println(s);
-        	
-      	String[] images = new String[jsonArr.size()];
+           System.out.println(s);
+           
+         String[] images = new String[jsonArr.size()];
         for(int i=0; i<jsonArr.size(); i++){
             //store image name
             String image = (String)((JSONObject)jsonArr.get(i)).get("name");
