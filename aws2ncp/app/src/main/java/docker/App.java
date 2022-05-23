@@ -8,13 +8,13 @@ import java.io.Console;
 import java.util.*;
 
 public class App {
+    static Scanner scanner = new Scanner(System.in);
+    static Migrator migrator = new Migrator();
+
+    static AwsMigrator awsMigrator = new AwsMigrator();
+    static NcpMigrator ncpMigrator = new NcpMigrator();
+
     public static void main(String args[]) throws Exception {
-
-        Scanner scanner = new Scanner(System.in);
-        Migrator migrator = new Migrator();
-
-        AwsMigrator awsMigrator = new AwsMigrator();
-        NcpMigrator ncpMigrator = new NcpMigrator();
 
         String awsAccessKey = "AKIA6CU5MHVS2ZQMCCNC";
         String awsSecretKey = "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";
@@ -61,7 +61,7 @@ public class App {
 
 
         System.out.println("Based Cloud Select");
-        String basedCloudName = getCloudPlatformInput(scanner, platforms);
+        String basedCloudName = getCloudPlatformInput(platforms);
         /*
         String targetCloudName = "";
 
@@ -83,7 +83,7 @@ public class App {
         */
 
         System.out.println("Target Cloud Select");
-        String targetCloudName = getCloudPlatformInput(scanner, platforms);
+        String targetCloudName = getCloudPlatformInput(platforms);
         /*
         // target Cloud Platform 입력
         while(!flag2) {
@@ -104,10 +104,6 @@ public class App {
 
         if(!migrator.migrate(basedCloudName, targetCloudName))
             System.out.println("Invalid Platform");
-
-
-        String naverAccessKey = "peEjtbF0CEY4e8xN9fgi";
-        String naverSecretKey = "gm2dEU9I8bjRGVshHxMFhWEpxmtj0VX2ecmdwn3A";
     }
 
 
@@ -141,7 +137,7 @@ public class App {
     }
 
     // cloud platform 입력
-    private static String getCloudPlatformInput(Scanner scanner, Platform[] platforms) {
+    private static String getCloudPlatformInput(Platform[] platforms) {
 
         String cloudName = "";
 
