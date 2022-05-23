@@ -45,7 +45,6 @@ public class App {
 
         Platform[] platforms = Platform.values();
 
-
         printCloudPlatformList(platforms);
         /*
         System.out.println("Supported Cloud Platform List");
@@ -61,6 +60,7 @@ public class App {
         */
 
 
+        System.out.println("Based Cloud Select");
         String basedCloudName = getCloudPlatformInput(scanner, platforms);
         /*
         String targetCloudName = "";
@@ -82,6 +82,7 @@ public class App {
         }
         */
 
+        System.out.println("Target Cloud Select");
         String targetCloudName = getCloudPlatformInput(scanner, platforms);
         /*
         // target Cloud Platform 입력
@@ -147,23 +148,20 @@ public class App {
         // cloud platform 입력
         while(true) {
 
-            // cloud platform 입력
-            System.out.println("Enter based cloud platform number : ");
-            int index = Integer.parseInt(scanner.nextLine());
-
             // 입력에 해당하는 값이 cloudplatformlist 에 있다면 (유효한 입력이라면)
             try {
+
+                // cloud platform 입력
+                System.out.println("Enter cloud platform number : ");
+                int index = Integer.parseInt(scanner.nextLine());
+
                 cloudName = platforms[index].name();
                 return cloudName;
 
                 // 유효하지 않은 입력이라면
-            } catch(IllegalArgumentException | InputMismatchException | ArrayIndexOutOfBoundsException e) {
+            } catch(NumberFormatException | InputMismatchException | ArrayIndexOutOfBoundsException e) {
                 System.out.println("유효하지 않은 입력입니다. 다시 입력해주세요.");
             }
         }
     }
-
-    //
-
-
 }
