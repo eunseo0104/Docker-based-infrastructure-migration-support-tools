@@ -49,9 +49,11 @@ public class NcpMigrator {
                     if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                         Element eElement = (Element) nNode;
 
+                        serverInfo.region = document.getElementsByTagName("regionCode").item(0).getTextContent();
+
                         String serverImageProductCode = document.getElementsByTagName("serverImageProductCode").item(0).getTextContent();
                         String serverProductCode = document.getElementsByTagName("serverProductCode").item(0).getTextContent();
-                        StringBuilder response2 = getVPCServerImageProductList(accessKey, secretKey, serverProductCode);
+                        StringBuilder response2 = getVPCServerImageProductList(accessKey, secretKey, serverProductCode, serverInfo.region);
                         Document document2 = XmlParser.stringBuilderToDocument(response2);
 
                         String totalRows2 = document2.getElementsByTagName("totalRows").item(0).getTextContent();
@@ -91,7 +93,6 @@ public class NcpMigrator {
 
                         serverInfo.memory = Long.parseLong(eElement.getElementsByTagName("memorySize").item(0).getTextContent())/1024/1024/1024;
                         serverInfo.vCpu =  Integer.parseInt(eElement.getElementsByTagName("cpuCount").item(0).getTextContent());
-                        serverInfo.region = document.getElementsByTagName("regionCode").item(0).getTextContent();;
 
                         System.out.println(no);
                         serverInfoList.add(serverInfo);
@@ -103,15 +104,15 @@ public class NcpMigrator {
     }
 
     // ServerInfo -> NCP ServerInfo
-    public NcpServerInfo convertServerInfoToNCPServerInfo(String accessKey, String secretKey, ServerInfo serverInfo) throws Exception {
+    public NcpServerInfo convertServerInfoToNCPServerInfo(String accessKey, String secretKey, ServerInfo serverInfo, String regionCode) throws Exception {
 
         NcpServerInfo ncpServerInfo = new NcpServerInfo();
 
         ncpServerInfo.serverName = serverInfo.serverName;
 
-        ncpServerInfo.regionCode = "KR"; // 수정 필요
+        ncpServerInfo.regionCode = regionCode;
 
-        ncpServerInfo.serverImageProductCode = convertVPCServerImageProductCode(accessKey, secretKey, serverInfo.osName, serverInfo.osVersion);
+        ncpServerInfo.serverImageProductCode = convertVPCServerImageProductCode(accessKey, secretKey, serverInfo.osName, serverInfo.osVersion, regionCode);
 
         System.out.println(serverInfo.osName + " " + serverInfo.osVersion);
         System.out.println(ncpServerInfo.serverImageProductCode);
@@ -135,8 +136,6 @@ public class NcpMigrator {
     }
 
     private String convertVPCServerProductCode(String accessKey, String secretKey, String regionCode, String serverImageProductCode, String instanceType, Long memory, int vCpu) throws Exception {
-
-        regionCode = "KR";
 
         String uri = "/vserver/v2/getServerProductList?" + regionCode + "&serverImageProductCode=" + serverImageProductCode;
 
@@ -192,8 +191,6 @@ public class NcpMigrator {
 
     private String getSubnetList(String accessKey, String secretKey, String regionCode) throws Exception {
 
-        regionCode = "KR";
-
         String uri = "/vpc/v2/getSubnetList?" + regionCode;
         StringBuilder response = NCPApiCall(accessKey, secretKey, uri);
 
@@ -238,11 +235,35 @@ public class NcpMigrator {
         StringBuilder response = NCPApiCall(accessKey, secretKey, uri);
     }
 
-    public void getVPCRegionList(String accessKey, String secretKey) {
+    public List<String> getRegionList(String accessKey, String secretKey) throws Exception {
 
         String uri = "/vserver/v2/getRegionList";
 
         StringBuilder response = NCPApiCall(accessKey, secretKey, uri);
+
+        // 응답 xml 파싱
+        Document document = XmlParser.stringBuilderToDocument(response);
+
+        String totalRows = document.getElementsByTagName("totalRows").item(0).getTextContent();
+
+        List<String> regionList = new ArrayList<>();
+
+        // serverInstanceNo 리스트 반환
+        if(!totalRows.equals("0")) {
+            NodeList nList = document.getElementsByTagName("regionList");
+            for (int temp = 0; temp < nList.getLength(); temp++) {
+                Node nNode = nList.item(temp);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+
+                    String regionCode = document.getElementsByTagName("regionCode").item(0).getTextContent();
+                    System.out.println(regionCode);
+                    regionList.add(regionCode);
+                }
+            }
+        }
+
+        return regionList;
     }
 
     public List<String> getServerInstanceNoList(String accessKey, String secretKey) throws Exception {
@@ -307,8 +328,6 @@ public class NcpMigrator {
     // VPC 리스트 조회
     public String getVPCList(String accessKey, String secretKey, String regionCode) throws Exception {
 
-        regionCode = "KR";
-
         String uri = "/vpc/v2/getVpcList?" + regionCode;
         StringBuilder response = NCPApiCall(accessKey, secretKey, uri);
 
@@ -333,21 +352,11 @@ public class NcpMigrator {
         return "vpc does not exist";
     }
 
-    public void getVPCZoneList(String accessKey, String secretKey) {
-
-        String regionCode = "KR";
-
-        String uri = "/vserver/v2/getZoneList?regionCode=" + regionCode;
-
-        StringBuilder response = NCPApiCall(accessKey, secretKey, uri);
-
-    }
-
     // 서버 이미지 프로덕트 코드 변환
-    public String convertVPCServerImageProductCode(String accessKey, String secretKey, String osName, String osVersion) throws Exception {
+    public String convertVPCServerImageProductCode(String accessKey, String secretKey, String osName, String osVersion, String regionCode) throws Exception {
 
         // getVPCServerImageProductList API 호출
-        StringBuilder response = getVPCServerImageProductList(accessKey, secretKey);
+        StringBuilder response = getVPCServerImageProductList(accessKey, secretKey, regionCode);
 
         // 응답 xml 파싱
         // serverInfo의 os 정보와 일치하는 product description이 있으면 해당 productCode 반환
@@ -389,10 +398,8 @@ public class NcpMigrator {
     }
 
     // VPC 서버 이미지 프로덕트
-    public StringBuilder getVPCServerImageProductList(String accessKey, String secretKey) {
+    public StringBuilder getVPCServerImageProductList(String accessKey, String secretKey, String regionCode) {
 
-        // 수정 필요
-        String regionCode = "KR";
         String uri = "/vserver/v2/getServerImageProductList?regionCode=" + regionCode;
 
         StringBuilder response = NCPApiCall(accessKey, secretKey, uri);
@@ -400,10 +407,8 @@ public class NcpMigrator {
     }
 
     // VPC 서버 이미지 프로덕트 with serverProductCode
-    public StringBuilder getVPCServerImageProductList(String accessKey, String secretKey, String serverProductCode) {
+    public StringBuilder getVPCServerImageProductList(String accessKey, String secretKey, String serverProductCode, String regionCode) {
 
-        // 수정 필요
-        String regionCode = "KR";
         String uri = "/vserver/v2/getServerImageProductList?regionCode=" + regionCode + "&productCode=" + serverProductCode;
 
         StringBuilder response = NCPApiCall(accessKey, secretKey, uri);
@@ -475,8 +480,6 @@ public class NcpMigrator {
 
     // VPC 리스트 조회
     public boolean checkGetVPCList(String accessKey, String secretKey, String regionCode) throws Exception {
-
-        regionCode = "KR";
 
         String uri = "/vpc/v2/getVpcList?" + regionCode;
         StringBuilder response = NCPApiCall(accessKey, secretKey, uri);

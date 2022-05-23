@@ -129,7 +129,7 @@ public class Migrator {
         List<String> instanceIds = new ArrayList<>();
         instanceIds.add(instanceId);
 
-        KeyPair ncpKeyPair = getNCPKeyInput();
+        KeyPair ncpKeyPair = getNcpKeyInput();
         ncpAccessKey = ncpKeyPair.getAccessKey();
         ncpSecretKey = ncpKeyPair.getSecretKey();
 
@@ -163,11 +163,19 @@ public class Migrator {
         List<ServerInfo> serverInfoList = awsMigrator.convertEC2InstanceDetailsToServerInfo(amazonEC2Client, selectedInstanceList, Regions.valueOf(region));
 
 
+        List<String> ncpRegionList = ncpMigrator.getRegionList(ncpAccessKey, ncpSecretKey);
+
+        // target platform region list 출력
+        printNcpRegionList(ncpRegionList);
+
+        // target platform region 선택
+        String regionCode = getNcpRegionCodeInput(ncpRegionList);
+
         //8. 공통 서버 정보를 이전할 서버 정보로 변환
         List<NcpServerInfo> ncpServerInfoList = new ArrayList<>();
 
         for(ServerInfo serverInfo: serverInfoList) {
-            NcpServerInfo ncpServerInfo = ncpMigrator.convertServerInfoToNCPServerInfo(ncpAccessKey, ncpSecretKey, serverInfo);
+            NcpServerInfo ncpServerInfo = ncpMigrator.convertServerInfoToNCPServerInfo(ncpAccessKey, ncpSecretKey, serverInfo, regionCode);
             ncpServerInfoList.add(ncpServerInfo);
         }
 
@@ -230,7 +238,7 @@ public class Migrator {
         String secretKey = null;
 
 
-        KeyPair ncpKeyPair = getNCPKeyInput();
+        KeyPair ncpKeyPair = getNcpKeyInput();
         ncpAccessKey = ncpKeyPair.getAccessKey();
         ncpSecretKey = ncpKeyPair.getSecretKey();
 
@@ -260,7 +268,7 @@ public class Migrator {
         List<String> serverInstanceNoList = ncpMigrator.getServerInstanceNoList(ncpAccessKey, ncpSecretKey);
 
 
-        printNCPInstanceNoList(serverInstanceNoList);
+        printNcpInstanceNoList(serverInstanceNoList);
 
         /*
         // 3. 사용자에게 InstanceNo 목록을 보여주고 이전할 Instance no를 입력 받음
@@ -271,7 +279,7 @@ public class Migrator {
         System.out.println("-----------------------------");
          */
 
-        String instanceNo = getNcPInstanceNoInput(serverInstanceNoList);
+        String instanceNo = getNcpInstanceNoInput(serverInstanceNoList);
         /*
         System.out.println("Enter Instance No : ");
         String instanceNo = scanner.nextLine();
@@ -379,7 +387,7 @@ public class Migrator {
 	}
     }
 
-    // Aws Region 리스트 출력
+    // AWS Region 리스트 출력
     private static void printAwsRegionList(Regions[] regions) {
 
         System.out.println("Region List");
@@ -394,16 +402,13 @@ public class Migrator {
     // AWS Region 입력
     private static String getAwsRegionInput(Regions[] regions) {
 
-        String regionName = "";
-
         while(true) {
             try {
                 // cloud platform 입력
                 System.out.println("Enter region number : ");
                 int index = Integer.parseInt(scanner.nextLine());
 
-                regionName = regions[index].name();
-                return regionName;
+                return regions[index].name();
 
                 // 유효하지 않은 입력이라면
             } catch(Exception e) {
@@ -414,7 +419,6 @@ public class Migrator {
 
     // AWS Key 입력 및 Client 생성
     private static AmazonEC2 getAwsKeyInput(String region) {
-        AmazonEC2 amazonEC2Client;
 
         while (true) {
             try {
@@ -427,7 +431,7 @@ public class Migrator {
                 System.out.println(secretKey);
 
                 // 입력 받은 정보로 ec2 client 생성
-                amazonEC2Client = awsMigrator.BuildEC2Client(accessKey, secretKey, Regions.valueOf(region));
+                AmazonEC2 amazonEC2Client = awsMigrator.BuildEC2Client(accessKey, secretKey, Regions.valueOf(region));
 
                 // 자격 증명에 오류가 있는지 검사
                 if (!awsMigrator.checkGetEC2InstanceDetails(amazonEC2Client)) {
@@ -457,16 +461,13 @@ public class Migrator {
     // AWS 인스턴스 ID 입력
     private static String getAwsInstanceIdInput(List<Instance> instanceList) {
 
-        String instanceId = "";
-
         while (true) {
             try {
                 // Instance Id 번호 입력
                 System.out.println("Enter instance id number : ");
                 int index = Integer.parseInt(scanner.nextLine());
 
-                instanceId = instanceList.get(index).getInstanceId();
-                return instanceId;
+                return instanceList.get(index).getInstanceId();
 
                 // 유효하지 않은 입력이라면
             } catch (Exception e) {
@@ -476,7 +477,7 @@ public class Migrator {
     }
 
     // NCP Key 입력
-    private static KeyPair getNCPKeyInput() {
+    private static KeyPair getNcpKeyInput() {
 
         while(true) {
 
@@ -502,7 +503,7 @@ public class Migrator {
     }
 
     // NCP 인스턴스 ID 리스트 출력
-    private static void printNCPInstanceNoList(List<String> instanceNoList) {
+    private static void printNcpInstanceNoList(List<String> instanceNoList) {
 
         System.out.println("Instance Number List");
 
@@ -514,9 +515,7 @@ public class Migrator {
     }
 
     // NCP 인스턴스 ID 입력
-    private static String getNcPInstanceNoInput(List<String> instanceNoList) {
-
-        String instanceNo = "";
+    private static String getNcpInstanceNoInput(List<String> instanceNoList) {
 
         while (true) {
             try {
@@ -524,8 +523,7 @@ public class Migrator {
                 System.out.println("Enter instance no number : ");
                 int index = Integer.parseInt(scanner.nextLine());
 
-                instanceNo = instanceNoList.get(index);
-                return instanceNo;
+                return instanceNoList.get(index);
 
                 // 유효하지 않은 입력이라면
             } catch (Exception e) {
@@ -533,4 +531,35 @@ public class Migrator {
             }
         }
     }
+
+    // NCP Region 리스트 출력
+    private static void printNcpRegionList(List<String> regionList) {
+
+        System.out.println("Region List");
+
+        System.out.println("-----------------------------");
+        for(int i=0; i<regionList.size(); i++) {
+            System.out.printf("|     %-22s |\n", i + " : " + regionList.get(i));
+        }
+        System.out.println("-----------------------------");
+    }
+
+    // NCP Region 입력
+    private static String getNcpRegionCodeInput(List<String> regionList) {
+
+        while(true) {
+            try {
+                // cloud platform 입력
+                System.out.println("Enter region number : ");
+                int index = Integer.parseInt(scanner.nextLine());
+
+                return regionList.get(index);
+
+                // 유효하지 않은 입력이라면
+            } catch(Exception e) {
+                System.out.println("유효하지 않은 입력입니다. 다시 입력해주세요.");
+            }
+        }
+    }
+
 }
