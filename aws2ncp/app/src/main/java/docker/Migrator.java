@@ -75,7 +75,6 @@ public class Migrator {
         System.out.println(region);
          */
 
-
         AmazonEC2 amazonEC2Client = getAwsKeyInput(region);
         // 2. 사용자로부터 awsAccessKey, awsSecretKey 입력 받음
         /*
@@ -171,11 +170,21 @@ public class Migrator {
         // target platform region 선택
         String regionCode = getNcpRegionCodeInput(ncpRegionList);
 
+
+        List<NcpServerImageProduct> ncpServerImageProductList = ncpMigrator.getNcpServerImageProductList(ncpAccessKey, ncpSecretKey, regionCode);
+
+        // server image product list 출력
+        printServerImageProductList(ncpServerImageProductList);
+
+        // server product image 선택
+        NcpServerImageProduct ncpServerImageProduct = getNcpServerImageProductInput(ncpServerImageProductList);
+
         //8. 공통 서버 정보를 이전할 서버 정보로 변환
         List<NcpServerInfo> ncpServerInfoList = new ArrayList<>();
 
         for(ServerInfo serverInfo: serverInfoList) {
             NcpServerInfo ncpServerInfo = ncpMigrator.convertServerInfoToNCPServerInfo(ncpAccessKey, ncpSecretKey, serverInfo, regionCode);
+            ncpServerInfo.serverProductCode = ncpServerImageProduct.getProductCode();
             ncpServerInfoList.add(ncpServerInfo);
         }
 
@@ -446,7 +455,7 @@ public class Migrator {
         }
     }
 
-    // AWS 인스턴스 ID 리스트 출력
+    // AWS Instance ID 리스트 출력
     private static void printAwsInstanceIdList(List<Instance> instanceList) {
 
         System.out.println("Instance Id List");
@@ -458,7 +467,7 @@ public class Migrator {
         System.out.println("-------------------------------");
     }
 
-    // AWS 인스턴스 ID 입력
+    // AWS Instance ID 입력
     private static String getAwsInstanceIdInput(List<Instance> instanceList) {
 
         while (true) {
@@ -502,7 +511,7 @@ public class Migrator {
         }
     }
 
-    // NCP 인스턴스 ID 리스트 출력
+    // NCP Instance Number 리스트 출력
     private static void printNcpInstanceNoList(List<String> instanceNoList) {
 
         System.out.println("Instance Number List");
@@ -514,7 +523,7 @@ public class Migrator {
         System.out.println("-----------------------------");
     }
 
-    // NCP 인스턴스 ID 입력
+    // NCP Instance Number 입력
     private static String getNcpInstanceNoInput(List<String> instanceNoList) {
 
         while (true) {
@@ -537,11 +546,11 @@ public class Migrator {
 
         System.out.println("Region List");
 
-        System.out.println("-----------------------------");
+        System.out.println("-------------------");
         for(int i=0; i<regionList.size(); i++) {
-            System.out.printf("|     %-22s |\n", i + " : " + regionList.get(i));
+            System.out.printf("|      %-11s |\n", i + " : " + regionList.get(i));
         }
-        System.out.println("-----------------------------");
+        System.out.println("-------------------");
     }
 
     // NCP Region 입력
@@ -549,11 +558,47 @@ public class Migrator {
 
         while(true) {
             try {
-                // cloud platform 입력
                 System.out.println("Enter region number : ");
                 int index = Integer.parseInt(scanner.nextLine());
 
                 return regionList.get(index);
+
+                // 유효하지 않은 입력이라면
+            } catch(Exception e) {
+                System.out.println("유효하지 않은 입력입니다. 다시 입력해주세요.");
+            }
+        }
+    }
+
+    // NCP Server Image Product  리스트 출력
+    private static void printServerImageProductList(List<NcpServerImageProduct> ncpServerImageProductList) {
+
+        System.out.println("Region List");
+
+        System.out.println("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        System.out.printf("|   No   |                          Name                          |                                   Description                              |   Block Storage Size (GB)  |\n");
+
+        for(int i=0; i<ncpServerImageProductList.size(); i++) {
+            NcpServerImageProduct ncpServerImageProduct = ncpServerImageProductList.get(i);
+            System.out.printf("|   %-5s", i);
+            System.out.printf("|      %-50s", ncpServerImageProduct.getProductName());
+            System.out.printf("|      %-70s", ncpServerImageProduct.getProductDescription());
+            System.out.printf("|             %-14s |\n", ncpServerImageProduct.getBaseBlockStorageSize());
+
+        }
+        System.out.println("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+    }
+
+
+    // NCP Region 입력
+    private static NcpServerImageProduct getNcpServerImageProductInput(List<NcpServerImageProduct> ncpServerImageProductList) {
+
+        while(true) {
+            try {
+                System.out.println("Enter server image product number : ");
+                int index = Integer.parseInt(scanner.nextLine());
+
+                return ncpServerImageProductList.get(index);
 
                 // 유효하지 않은 입력이라면
             } catch(Exception e) {

@@ -248,16 +248,15 @@ public class NcpMigrator {
 
         List<String> regionList = new ArrayList<>();
 
-        // serverInstanceNo 리스트 반환
+        // region list 반환
         if(!totalRows.equals("0")) {
-            NodeList nList = document.getElementsByTagName("regionList");
+            NodeList nList = document.getElementsByTagName("region");
             for (int temp = 0; temp < nList.getLength(); temp++) {
                 Node nNode = nList.item(temp);
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                     Element eElement = (Element) nNode;
 
-                    String regionCode = document.getElementsByTagName("regionCode").item(0).getTextContent();
-                    System.out.println(regionCode);
+                    String regionCode = eElement.getElementsByTagName("regionCode").item(0).getTextContent();
                     regionList.add(regionCode);
                 }
             }
@@ -437,6 +436,8 @@ public class NcpMigrator {
 
         byte[] rawHmac = mac.doFinal(message.getBytes(StandardCharsets.UTF_8));
         String encodeBase64String = Base64.encodeBase64String(rawHmac);
+        System.out.println(timestamp);
+        System.out.println(encodeBase64String);
 
         return encodeBase64String;
     }
@@ -505,4 +506,35 @@ public class NcpMigrator {
         return false;
     }
 
+    public List<NcpServerImageProduct> getNcpServerImageProductList(String accessKey, String secretKey, String regionCode) throws Exception {
+
+        List<NcpServerImageProduct> ncpServerImageProductList = new ArrayList<>();
+
+        String uri = "/vserver/v2/getServerImageProductList?regionCode=" + regionCode;
+
+        StringBuilder response = NCPApiCall(accessKey, secretKey, uri);
+
+        // 응답 xml 파싱
+        Document document = XmlParser.stringBuilderToDocument(response);
+
+        String totalRows = document.getElementsByTagName("totalRows").item(0).getTextContent();
+
+        if(!totalRows.equals("0")) {
+            NodeList nList = document.getElementsByTagName("product");
+            for (int temp = 0; temp < nList.getLength(); temp++) {
+                Node nNode = nList.item(temp);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+
+                    String productCode = eElement.getElementsByTagName("productCode").item(0).getTextContent();
+                    String productName = eElement.getElementsByTagName("productName").item(0).getTextContent();
+                    String productDescription = eElement.getElementsByTagName("productDescription").item(0).getTextContent();
+                    Long baseBlockStorageSize = Long.parseLong(eElement.getElementsByTagName("baseBlockStorageSize").item(0).getTextContent())/1024/1024/1024;
+
+                    ncpServerImageProductList.add(new NcpServerImageProduct(productCode, productName, productDescription, baseBlockStorageSize));
+                }
+            }
+        }
+        return ncpServerImageProductList;
+    }
 }

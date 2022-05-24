@@ -127,13 +127,13 @@ public class App {
         System.out.println("Supported Cloud Platform List");
 
 
-        System.out.println("-----------------------------");
+        System.out.println("---------------------------");
         for(int i=0; i<platforms.length; i++) {
-            System.out.print("|            ");
+            System.out.print("|         ");
             System.out.print(i + " : " + platforms[i].name());
-            System.out.println("            |");
+            System.out.println("         |");
         }
-        System.out.println("-----------------------------");
+        System.out.println("---------------------------");
     }
 
     // cloud platform 입력
