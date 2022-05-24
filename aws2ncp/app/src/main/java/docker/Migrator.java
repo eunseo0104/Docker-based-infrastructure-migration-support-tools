@@ -176,15 +176,24 @@ public class Migrator {
         // server image product list 출력
         printServerImageProductList(ncpServerImageProductList);
 
-        // server product image 선택
+        // server image product 선택
         NcpServerImageProduct ncpServerImageProduct = getNcpServerImageProductInput(ncpServerImageProductList);
+
+        List<NcpServerProduct> serverProductList = ncpMigrator.getNcpServerProductList(ncpAccessKey, ncpSecretKey, regionCode, "SW.VSVR.OS.LNX64.CNTOS.0703.B050");
+
+        // server image product 에 적용 가능한 server product list 출력
+        printServerProductList(serverProductList);
+
+        // server product 선택
+        NcpServerProduct ncpServerProduct = getNcpServerProductInput(serverProductList);
 
         //8. 공통 서버 정보를 이전할 서버 정보로 변환
         List<NcpServerInfo> ncpServerInfoList = new ArrayList<>();
 
         for(ServerInfo serverInfo: serverInfoList) {
             NcpServerInfo ncpServerInfo = ncpMigrator.convertServerInfoToNCPServerInfo(ncpAccessKey, ncpSecretKey, serverInfo, regionCode);
-            ncpServerInfo.serverProductCode = ncpServerImageProduct.getProductCode();
+            ncpServerInfo.serverImageProductCode = ncpServerImageProduct.getProductCode();
+            ncpServerInfo.serverProductCode = ncpServerProduct.getProductCode();
             ncpServerInfoList.add(ncpServerInfo);
         }
 
@@ -573,7 +582,7 @@ public class Migrator {
     // NCP Server Image Product  리스트 출력
     private static void printServerImageProductList(List<NcpServerImageProduct> ncpServerImageProductList) {
 
-        System.out.println("Region List");
+        System.out.println("Server Image Product List");
 
         System.out.println("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
         System.out.printf("|   No   |                          Name                          |                                   Description                              |   Block Storage Size (GB)  |\n");
@@ -590,7 +599,7 @@ public class Migrator {
     }
 
 
-    // NCP Region 입력
+    // NCP Server Image Product 입력
     private static NcpServerImageProduct getNcpServerImageProductInput(List<NcpServerImageProduct> ncpServerImageProductList) {
 
         while(true) {
@@ -599,6 +608,40 @@ public class Migrator {
                 int index = Integer.parseInt(scanner.nextLine());
 
                 return ncpServerImageProductList.get(index);
+
+                // 유효하지 않은 입력이라면
+            } catch(Exception e) {
+                System.out.println("유효하지 않은 입력입니다. 다시 입력해주세요.");
+            }
+        }
+    }
+
+    private void printServerProductList(List<NcpServerProduct> serverProductList) {
+
+        System.out.println("Server Product List");
+
+        System.out.println("----------------------------------------------------------------------------------------------------------------------------");
+        System.out.printf("|   No   |                          Name                                                             |    Product Type     |\n");
+
+        for(int i=0; i<serverProductList.size(); i++) {
+            NcpServerProduct ncpServerProduct = serverProductList.get(i);
+            System.out.printf("|   %-5s", i);
+            System.out.printf("|      %-85s", ncpServerProduct.getProductName());
+            System.out.printf("|      %-14s |\n", ncpServerProduct.getProductType());
+
+        }
+        System.out.println("----------------------------------------------------------------------------------------------------------------------------");
+    }
+
+    // NCP Server Product 입력
+    private static NcpServerProduct getNcpServerProductInput(List<NcpServerProduct> ncpServerProductList) {
+
+        while(true) {
+            try {
+                System.out.println("Enter server product number : ");
+                int index = Integer.parseInt(scanner.nextLine());
+
+                return ncpServerProductList.get(index);
 
                 // 유효하지 않은 입력이라면
             } catch(Exception e) {

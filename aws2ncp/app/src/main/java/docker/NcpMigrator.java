@@ -537,4 +537,36 @@ public class NcpMigrator {
         }
         return ncpServerImageProductList;
     }
+
+    public List<NcpServerProduct> getNcpServerProductList(String accessKey, String secretKey, String regionCode, String serverImageProductCode) throws Exception {
+
+        List<NcpServerProduct> ncpServerProductList = new ArrayList<>();
+
+        String uri = "/vserver/v2/getServerProductList?regionCode=" + regionCode + "&serverImageProductCode=" + serverImageProductCode;
+
+        StringBuilder response = NCPApiCall(accessKey, secretKey, uri);
+
+        // 응답 xml 파싱
+        Document document = XmlParser.stringBuilderToDocument(response);
+
+        String totalRows = document.getElementsByTagName("totalRows").item(0).getTextContent();
+
+        if(!totalRows.equals("0")) {
+            NodeList nList = document.getElementsByTagName("product");
+            for (int temp = 0; temp < nList.getLength(); temp++) {
+                Node nNode = nList.item(temp);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+
+                    String productCode = eElement.getElementsByTagName("productCode").item(0).getTextContent();
+                    String productName = eElement.getElementsByTagName("productName").item(0).getTextContent();
+                    String productDescription = eElement.getElementsByTagName("productDescription").item(0).getTextContent();
+                    String productType = eElement.getElementsByTagName("codeName").item(0).getTextContent();
+                    System.out.println(productType);
+                    ncpServerProductList.add(new NcpServerProduct(productCode, productName, productDescription, productType));
+                }
+            }
+        }
+        return ncpServerProductList;
+    }
 }
