@@ -51,8 +51,8 @@ public class Migrator {
         String ncpSecretKey = null;
         String ncpRegistryName = null;
         String awsRepositoryName = null;
-	    String accessKey = null;
-	    String secretKey = null;
+	    String awsAccessKey = null;
+	    String awsSecretKey = null;
 
         // 1. 사용자로부터 서버가 있는 region을 입력 받음
         Regions[] regions = Regions.values();
@@ -75,7 +75,17 @@ public class Migrator {
         System.out.println(region);
          */
 
-        AmazonEC2 amazonEC2Client = getAwsKeyInput(region);
+        AmazonEC2 amazonEC2Client = null;
+
+        while(amazonEC2Client == null) {
+
+            // aws 키 입력
+            KeyPair awsKeyPair = getAwsKeyInput();
+
+            // 키로 클라이언트 생성 및 검증
+            amazonEC2Client = buildEc2Client(awsKeyPair.getAccessKey(), awsKeyPair.getSecretKey(), region);
+        }
+
         // 2. 사용자로부터 awsAccessKey, awsSecretKey 입력 받음
         /*
         AmazonEC2 amazonEC2Client = null;
@@ -220,7 +230,7 @@ public class Migrator {
 			String awsAcountId = scanner.nextLine();
 			
 			String[] ncpInfo = {ncpRegistryName, ncpAccessKey, ncpSecretKey};
-			String[] awsInfo = {awsRepositoryName, accessKey, secretKey, region, awsAcountId};
+			String[] awsInfo = {awsRepositoryName, awsAccessKey, awsSecretKey, region, awsAcountId};
 			awsDocker.migrateDocker(ncpInfo, awsInfo);
 			System.out.println("Image Migration Complete.");
 			break;
@@ -328,7 +338,17 @@ public class Migrator {
         System.out.println(region);
          */
 
-        AmazonEC2 amazonEC2Client = getAwsKeyInput(region);
+        AmazonEC2 amazonEC2Client = null;
+
+        while(amazonEC2Client == null) {
+
+            // aws 키 입력
+            KeyPair awsKeyPair = getAwsKeyInput();
+
+            // 키로 클라이언트 생성 및 검증
+            amazonEC2Client = buildEc2Client(awsKeyPair.getAccessKey(), awsKeyPair.getSecretKey(), region);
+        }
+
         /*
         // 5. 사용자로부터 awsAccessKey, awsSecretKey 입력 받음
         AmazonEC2 amazonEC2Client = null;
@@ -435,32 +455,44 @@ public class Migrator {
         }
     }
 
-    // AWS Key 입력 및 Client 생성
-    private static AmazonEC2 getAwsKeyInput(String region) {
+    // AWS Key 입력
+    private static KeyPair getAwsKeyInput() {
 
-        while (true) {
+        while(true) {
+
             try {
                 System.out.println("Enter AWS Access Key : ");
-                String accessKey = scanner.nextLine();
-                System.out.println(accessKey);
+                String awsAccessKey = scanner.nextLine();
+                System.out.println(awsAccessKey);
 
                 System.out.println("Enter AWS Secret Key : ");
-                String secretKey = scanner.nextLine();
-                System.out.println(secretKey);
+                String awsSecretKey = scanner.nextLine();
+                System.out.println(awsSecretKey);
 
-                // 입력 받은 정보로 ec2 client 생성
-                AmazonEC2 amazonEC2Client = awsMigrator.BuildEC2Client(accessKey, secretKey, Regions.valueOf(region));
-
-                // 자격 증명에 오류가 있는지 검사
-                if (!awsMigrator.checkGetEC2InstanceDetails(amazonEC2Client)) {
-                    //System.out.println("키가 유효하지 않습니다. 다시 입력해주세요.");
-                    throw new Exception();
-                }
-                return amazonEC2Client;
+                return new KeyPair(awsAccessKey, awsSecretKey);
             } catch (Exception e) {
                 System.out.println("키가 유효하지 않습니다. 다시 입력해주세요.");
-                e.printStackTrace();
             }
+        }
+    }
+
+    // AWS Client 생성
+    private static AmazonEC2 buildEc2Client(String accessKey, String secretKey, String region) {
+
+        try {
+            // 입력 받은 정보로 ec2 client 생성
+            AmazonEC2 amazonEC2Client = awsMigrator.BuildEC2Client(accessKey, secretKey, Regions.valueOf(region));
+
+            // 자격 증명에 오류가 있는지 검사
+            if (!awsMigrator.checkGetEC2InstanceDetails(amazonEC2Client)) {
+                //System.out.println("키가 유효하지 않습니다. 다시 입력해주세요.");
+                throw new Exception();
+            }
+
+            return amazonEC2Client;
+        } catch (Exception e) {
+            System.out.println("키가 유효하지 않습니다. 다시 입력해주세요.");
+            return null;
         }
     }
 
