@@ -214,13 +214,15 @@ public class NcpMigrator {
 
 
         String uri = "/vserver/v2/createServerInstances?serverImageProductCode=" + ncpServerInfo.serverImageProductCode
-                + "&serverProductCode=" + "SVR.VSVR.HICPU.C002.M004.NET.SSD.B050.G002"
+                + "&serverProductCode=" + ncpServerInfo.serverProductCode
                 + "&vpcNo=" + ncpServerInfo.vpcNo
                 + "&subnetNo=" + ncpServerInfo.subnetNo
                 + "&serverName=" + ncpServerInfo.serverName
                 + "&networkInterfaceList.1.networkInterfaceOrder=" + ncpServerInfo.networkInterfaceOrder
                 + acgString;
-
+                
+        System.out.println(ncpServerInfo.serverImageProductCode);
+	System.out.println(ncpServerInfo.serverProductCode);
 
         StringBuilder response = NCPApiCall(accessKey, secretKey, uri);
     }

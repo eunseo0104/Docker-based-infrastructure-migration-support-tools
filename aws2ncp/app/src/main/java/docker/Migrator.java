@@ -112,7 +112,7 @@ public class Migrator {
         // server image product 선택
         NcpServerImageProduct ncpServerImageProduct = getNcpServerImageProductInput(ncpServerImageProductList);
 
-        List<NcpServerProduct> serverProductList = ncpMigrator.getNcpServerProductList(ncpAccessKey, ncpSecretKey, regionCode, "SW.VSVR.OS.LNX64.CNTOS.0703.B050");
+        List<NcpServerProduct> serverProductList = ncpMigrator.getNcpServerProductList(ncpAccessKey, ncpSecretKey, regionCode, ncpServerImageProduct.getProductCode());
 
         // server image product 에 적용 가능한 server product list 출력
         printServerProductList(serverProductList);
