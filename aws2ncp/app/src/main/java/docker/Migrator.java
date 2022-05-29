@@ -42,16 +42,6 @@ public class Migrator {
     // aws to ncp 변환
     public void awsToNcp() throws Exception {
 
-        /*
-        boolean flag = false;
-        boolean flag2 = false;
-
-        Scanner scanner = new Scanner(System.in);
-        AwsMigrator awsMigrator = new AwsMigrator();
-        NcpMigrator ncpMigrator = new NcpMigrator();
-
-         */
-
         String ncpAccessKey = null;
         String ncpSecretKey = null;
         String ncpRegistryName = null;
@@ -63,25 +53,11 @@ public class Migrator {
         Regions[] regions = Regions.values();
         printAwsRegionList(regions);
 
-        /*
-        System.out.println("-----------------------------");
-        Regions[] regions = Regions.values();
-
-        for (Regions r : regions) {
-            System.out.printf("|        %-18s |\n", r.name());
-        }
-        System.out.println("-----------------------------");
-         */
-
         String region = getAwsRegionInput(regions);
-        /*
-        System.out.println("Enter Region : ");
-        String region = scanner.nextLine();
-        System.out.println(region);
-         */
 
         AmazonEC2 amazonEC2Client = null;
-
+        
+	// 2. 사용자로부터 awsAccessKey, awsSecretKey 입력 받음
         while(amazonEC2Client == null) {
 
             // aws 키 입력
@@ -91,30 +67,6 @@ public class Migrator {
             // 키로 클라이언트 생성 및 검증
             amazonEC2Client = buildEc2Client(awsKeyPair.getAccessKey(), awsKeyPair.getSecretKey(), region);
         }
-        // 2. 사용자로부터 awsAccessKey, awsSecretKey 입력 받음
-        /*
-        AmazonEC2 amazonEC2Client = null;
-        while (!flag) {
-            flag = true;
-
-            System.out.println("Enter AWS Access Key : ");
-            accessKey = scanner.nextLine();
-            System.out.println(accessKey);
-
-            System.out.println("Enter AWS Secret Key : ");
-            secretKey = scanner.nextLine();
-            System.out.println(secretKey);
-
-            // 입력 받은 정보로 ec2 client 생성
-            amazonEC2Client = awsMigrator.BuildEC2Client(accessKey, secretKey, Regions.valueOf(region));
-
-            // 자격 증명에 오류가 있는지 검사
-            if (!awsMigrator.checkGetEC2InstanceDetails(amazonEC2Client)) {
-                System.out.println("Invalid Key!");
-                flag = false;
-            }
-        }
-         */
 
         // 3. 입력 받은 계정 정보로 해당 region의 모든 Instance 정보를 가져옴
         List<Instance> instanceList = awsMigrator.getEC2InstanceDetails(amazonEC2Client);
@@ -123,51 +75,17 @@ public class Migrator {
         // 4. 사용자에게 Instance 목록을 보여주고 이전할 Instance id를 입력 받음
 
         printAwsInstanceIdList(instanceList);
-        /*
-        System.out.println("-----------------------------");
-        for (Instance i : instanceList) {
-            System.out.printf("|        %-18s |\n", i.getInstanceId());
-        }
-        System.out.println("-----------------------------");
-        */
-
-
+        
         String instanceId = getAwsInstanceIdInput(instanceList);
 
-    /*
-        System.out.println("Enter Instance Id : ");
-        String instanceId = scanner.nextLine();
-        System.out.println(instanceId);
-*/
 
         List<String> instanceIds = new ArrayList<>();
         instanceIds.add(instanceId);
-
+	
+	// 5.target key 입력
         KeyPair ncpKeyPair = getNcpKeyInput();
         ncpAccessKey = ncpKeyPair.getAccessKey();
         ncpSecretKey = ncpKeyPair.getSecretKey();
-
-        /*
-        // 5.target key 입력
-        while(!flag2) {
-            flag2 = true;
-
-            System.out.println("Enter NCP Access Key : ");
-            ncpAccessKey = scanner.nextLine();
-            System.out.println(ncpAccessKey);
-
-            System.out.println("Enter NCP Secret Key : ");
-            ncpSecretKey = scanner.nextLine();
-            System.out.println(ncpSecretKey);
-
-            // 5-1. 자격 증명에 오류가 있는지 검사
-            if(!ncpMigrator.checkGetVPCList(ncpAccessKey, ncpSecretKey, "")) {
-                System.out.println("Invalid Key!");
-                flag2 = false;
-            }
-        }
-         */
-
 
         //6. 해당 Instance 서버 정보를 호출
         List<Instance> selectedInstanceList = awsMigrator.getEC2InstanceDetails(amazonEC2Client, instanceIds);
@@ -219,7 +137,7 @@ public class Migrator {
             System.out.println(ncpServerInfo.serverName + "Migration completed");
         }
         
-        //10. Docker image
+        //10. Docker image Migration
         System.out.println("Are you sure you want to migrate AWS Docker image?(Y/N): ");
         while(true){
             String answer = scanner.nextLine();
@@ -249,7 +167,7 @@ public class Migrator {
             }
         }
 
-        //11. Bucket
+        //11. Bucket Migration
         System.out.println("Are you sure you want to migrate AWS Docker image?(Y/N): ");
         while(true){
             String answer = scanner.nextLine();
