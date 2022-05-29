@@ -48,7 +48,6 @@ public class NcpObjectStorageMigrator {
         JSONObject migrationJsonObject = new JSONObject(hashMap);
 
         String response = clientApiPostCall(accessKey, secretKey, uri, migrationJsonObject);
-        System.out.println(response);
         return ncpMigrationJob.getTitle();
     }
 
@@ -80,7 +79,6 @@ public class NcpObjectStorageMigrator {
             if (response.getStatusLine().getStatusCode() == 200) {
                 ResponseHandler<String> handler = new BasicResponseHandler();
                 body = handler.handleResponse(response);
-                System.out.println(body);
             } else {
                 System.out.println("response is error : " + response.getStatusLine().getStatusCode());
             }
@@ -112,7 +110,6 @@ public class NcpObjectStorageMigrator {
             if (response.getStatusLine().getStatusCode() == 200) {
                 ResponseHandler<String> handler = new BasicResponseHandler();
                 body = handler.handleResponse(response);
-                System.out.println(body);
             } else {
                 System.out.println("response is error : " + response.getStatusLine().getStatusCode());
             }

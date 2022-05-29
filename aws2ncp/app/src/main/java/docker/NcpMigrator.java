@@ -94,7 +94,6 @@ public class NcpMigrator {
                         serverInfo.memory = Long.parseLong(eElement.getElementsByTagName("memorySize").item(0).getTextContent())/1024/1024/1024;
                         serverInfo.vCpu =  Integer.parseInt(eElement.getElementsByTagName("cpuCount").item(0).getTextContent());
 
-                        System.out.println(no);
                         serverInfoList.add(serverInfo);
                     }
                 }
@@ -114,17 +113,9 @@ public class NcpMigrator {
 
         ncpServerInfo.serverImageProductCode = convertVPCServerImageProductCode(accessKey, secretKey, serverInfo.osName, serverInfo.osVersion, regionCode);
 
-        System.out.println(serverInfo.osName + " " + serverInfo.osVersion);
-        System.out.println(ncpServerInfo.serverImageProductCode);
-
         ncpServerInfo.vpcNo = getVPCList(accessKey, secretKey, ncpServerInfo.regionCode);
-        System.out.println(ncpServerInfo.vpcNo);
 
         ncpServerInfo.subnetNo = getSubnetList(accessKey, secretKey, ncpServerInfo.regionCode);
-        System.out.println(ncpServerInfo.subnetNo);
-
-        System.out.println(serverInfo.vCpu);
-        System.out.println(serverInfo.memory);
 
         ncpServerInfo.serverProductCode = convertVPCServerProductCode(accessKey, secretKey, ncpServerInfo.regionCode,
                 ncpServerInfo.serverImageProductCode, serverInfo.instanceType, serverInfo.memory, serverInfo.vCpu);
@@ -164,7 +155,6 @@ public class NcpMigrator {
         Document document = XmlParser.stringBuilderToDocument(response);
 
         String totalRows = document.getElementsByTagName("totalRows").item(0).getTextContent();
-        System.out.println(totalRows);
 
         // instanceType, memory, vCpu가 일치하면 반환
         if(!totalRows.equals("0")) {
@@ -224,7 +214,7 @@ public class NcpMigrator {
 
 
         String uri = "/vserver/v2/createServerInstances?serverImageProductCode=" + ncpServerInfo.serverImageProductCode
-                + "&serverProductCode=" + ncpServerInfo.serverProductCode
+                + "&serverProductCode=" + "SVR.VSVR.HICPU.C002.M004.NET.SSD.B050.G002"
                 + "&vpcNo=" + ncpServerInfo.vpcNo
                 + "&subnetNo=" + ncpServerInfo.subnetNo
                 + "&serverName=" + ncpServerInfo.serverName
@@ -286,7 +276,6 @@ public class NcpMigrator {
                     Element eElement = (Element) nNode;
 
                     String no = document.getElementsByTagName("serverInstanceNo").item(0).getTextContent();
-                    System.out.println(no);
                     serverInstanceNoList.add(no);
                 }
             }
@@ -316,7 +305,6 @@ public class NcpMigrator {
                     Element eElement = (Element) nNode;
 
                     String acg = document.getElementsByTagName("accessControlGroupNo").item(0).getTextContent();
-                    System.out.println(acg);
                     acgList.add(acg);
                 }
             }
@@ -385,7 +373,7 @@ public class NcpMigrator {
                         break;
                     }
                 }
-                System.out.println(productOsName + " " + productOsVersion);
+
                 // OS가 일치하는지 확인
                 if(productOsName.equalsIgnoreCase(osName) && productOsVersion.equalsIgnoreCase(osVersion)) {
 
@@ -436,8 +424,6 @@ public class NcpMigrator {
 
         byte[] rawHmac = mac.doFinal(message.getBytes(StandardCharsets.UTF_8));
         String encodeBase64String = Base64.encodeBase64String(rawHmac);
-        System.out.println(timestamp);
-        System.out.println(encodeBase64String);
 
         return encodeBase64String;
     }
@@ -469,7 +455,6 @@ public class NcpMigrator {
                 response.append(inputLine);
             }
             br.close();
-            System.out.println(response);
 
         } catch (Exception e) {
             System.out.println(e);
@@ -562,7 +547,6 @@ public class NcpMigrator {
                     String productName = eElement.getElementsByTagName("productName").item(0).getTextContent();
                     String productDescription = eElement.getElementsByTagName("productDescription").item(0).getTextContent();
                     String productType = eElement.getElementsByTagName("codeName").item(0).getTextContent();
-                    System.out.println(productType);
                     ncpServerProductList.add(new NcpServerProduct(productCode, productName, productDescription, productType));
                 }
             }

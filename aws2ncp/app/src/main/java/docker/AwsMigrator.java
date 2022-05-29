@@ -41,7 +41,6 @@ public class AwsMigrator {
 
         RunInstancesResult runInstancesResult = amazonEC2Client.runInstances(runInstancesRequest);
 
-        System.out.println(runInstancesResult);
     }
 
     public void RunEc2Instance(AmazonEC2 amazonEC2Client, AwsServerInfo awsServerInfo) {
@@ -55,8 +54,6 @@ public class AwsMigrator {
                 .withSecurityGroupIds(awsServerInfo.securityGroupId);
 
         RunInstancesResult runInstancesResult = amazonEC2Client.runInstances(runInstancesRequest);
-
-        System.out.println(runInstancesResult);
     }
 
     // 인스턴스 목록 반환

@@ -147,7 +147,6 @@ public class NcpDockerMigrator {
         String space = " ";               // one space
         String newLine = "\n";               // new line
         String method = "GET";               // method
-        System.out.println(accessKey + " " + secretKey);
         String message = new StringBuilder()
             .append(method)
             .append(space)

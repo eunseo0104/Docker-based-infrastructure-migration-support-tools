@@ -28,9 +28,6 @@ public class AwsObjectStorageMigrator {
 
     public List<Bucket> getBucketList(AmazonS3 amazonS3) throws Exception {
         List<Bucket> buckets = amazonS3.listBuckets();
-        for (Bucket b : buckets) {
-            System.out.println("* " + b.getName());
-        }
         return buckets;
     }
 
