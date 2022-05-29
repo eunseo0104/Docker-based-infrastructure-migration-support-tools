@@ -2,6 +2,9 @@ package docker;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.Bucket;
 
 import java.util.*;
 
@@ -10,6 +13,8 @@ public class Migrator {
     static Scanner scanner = new Scanner(System.in);
     static AwsMigrator awsMigrator = new AwsMigrator();
     static NcpMigrator ncpMigrator = new NcpMigrator();
+    static NcpObjectStorageMigrator ncpObjectStorageMigrator = new NcpObjectStorageMigrator();
+    static AwsObjectStorageMigrator awsObjectStorageMigrator = new AwsObjectStorageMigrator();
 
     public boolean migrate(String basedPlatformName, String targetPlatformName) throws Exception {
 
@@ -81,11 +86,11 @@ public class Migrator {
 
             // aws 키 입력
             KeyPair awsKeyPair = getAwsKeyInput();
-
+            awsAccessKey = awsKeyPair.getAccessKey();
+            awsSecretKey = awsKeyPair.getSecretKey();
             // 키로 클라이언트 생성 및 검증
             amazonEC2Client = buildEc2Client(awsKeyPair.getAccessKey(), awsKeyPair.getSecretKey(), region);
         }
-
         // 2. 사용자로부터 awsAccessKey, awsSecretKey 입력 받음
         /*
         AmazonEC2 amazonEC2Client = null;
@@ -217,32 +222,65 @@ public class Migrator {
         //10. Docker image
         System.out.println("Are you sure you want to migrate AWS Docker image?(Y/N): ");
         while(true){
-		String answer = scanner.nextLine();
-		if(answer.equals("Y")){
-			AwsDockerMigrator awsDocker = new AwsDockerMigrator();
-			System.out.println("Enter NCP Container Registry name: ");
-			ncpRegistryName = scanner.nextLine();
-			
-			System.out.println("Enter AWS Container Repository name: ");
-			awsRepositoryName = scanner.nextLine();
-			
-			System.out.println("Enter AWS Account id: ");
-			String awsAcountId = scanner.nextLine();
-			
-			String[] ncpInfo = {ncpRegistryName, ncpAccessKey, ncpSecretKey};
-			String[] awsInfo = {awsRepositoryName, awsAccessKey, awsSecretKey, region, awsAcountId};
-			awsDocker.migrateDocker(ncpInfo, awsInfo);
-			System.out.println("Image Migration Complete.");
-			break;
-		}
-		else if(answer.equals("N")){
-			System.out.println("Complete.");
-			break;
-		}
-		else{
-			System.out.println("(Y/N): ");
-		}        
-	}
+            String answer = scanner.nextLine();
+            if(answer.equals("Y")){
+                AwsDockerMigrator awsDocker = new AwsDockerMigrator();
+                System.out.println("Enter NCP Container Registry name: ");
+                ncpRegistryName = scanner.nextLine();
+
+                System.out.println("Enter AWS Container Repository name: ");
+                awsRepositoryName = scanner.nextLine();
+
+                System.out.println("Enter AWS Account id: ");
+                String awsAcountId = scanner.nextLine();
+
+                String[] ncpInfo = {ncpRegistryName, ncpAccessKey, ncpSecretKey};
+                String[] awsInfo = {awsRepositoryName, awsAccessKey, awsSecretKey, region, awsAcountId};
+                awsDocker.migrateDocker(ncpInfo, awsInfo);
+                System.out.println("Image Migration Complete.");
+                break;
+            }
+            else if(answer.equals("N")){
+                System.out.println("Complete.");
+                break;
+            }
+            else{
+                System.out.println("(Y/N): ");
+            }
+        }
+
+        //11. Bucket
+        System.out.println("Are you sure you want to migrate AWS Docker image?(Y/N): ");
+        while(true){
+            String answer = scanner.nextLine();
+            if(answer.equals("Y")) {
+                AmazonS3 amazonS3 = awsObjectStorageMigrator.BuildS3Client(awsAccessKey,awsSecretKey, Regions.valueOf(region));
+
+                List<Bucket> bucketList = awsObjectStorageMigrator.getBucketList(amazonS3);
+                printS3BucketList(bucketList);
+                String bucketName = getS3BucketInput(bucketList);
+
+                NcpMigrationJobSource ncpMigrationJobSource = new NcpMigrationJobSource(bucketName,"AWS", awsAccessKey, awsSecretKey, region, "");
+                NcpMigrationJobTarget ncpMigrationJobTarget = new NcpMigrationJobTarget(bucketName, "");
+
+                System.out.println("Enter Migration Job Title: ");
+                String title = scanner.nextLine();
+                NcpMigrationJob ncpMigrationJob = new NcpMigrationJob(title, ncpMigrationJobSource, ncpMigrationJobTarget);
+
+                ncpObjectStorageMigrator.createMigrationJob(ncpAccessKey, ncpSecretKey, ncpMigrationJob);
+            }
+            else if(answer.equals("N")){
+                System.out.println("Complete.");
+                break;
+            }
+            else{
+                System.out.println("(Y/N): ");
+            }
+
+        }
+
+
+
     }
 
     // ncp to aws 변환
@@ -682,4 +720,32 @@ public class Migrator {
         }
     }
 
+    // S3 Bucket 출력
+    private static void printS3BucketList(List<Bucket> bucketList) {
+
+        System.out.println("Bucket List");
+
+        System.out.println("-------------------");
+        for(int i=0; i<bucketList.size(); i++) {
+            System.out.printf("|      %-11s |\n", i + " : " + bucketList.get(i).getName());
+        }
+        System.out.println("-------------------");
+    }
+
+    // NCP Region 입력
+    private static String getS3BucketInput(List<Bucket> bucketList) {
+
+        while(true) {
+            try {
+                System.out.println("Enter bucket number : ");
+                int index = Integer.parseInt(scanner.nextLine());
+
+                return bucketList.get(index).getName();
+
+                // 유효하지 않은 입력이라면
+            } catch(Exception e) {
+                System.out.println("유효하지 않은 입력입니다. 다시 입력해주세요.");
+            }
+        }
+    }
 }
