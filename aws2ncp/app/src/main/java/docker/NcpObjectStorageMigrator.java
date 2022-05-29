@@ -18,9 +18,6 @@ import static docker.NcpMigrator.makeSignature;
 
 public class NcpObjectStorageMigrator {
 
-    static Scanner scanner = new Scanner(System.in);
-    static AwsMigrator awsMigrator = new AwsMigrator();
-    static NcpMigrator ncpMigrator = new NcpMigrator();
     private static String objectMigrationApiUrl = "https://objectmigration.apigw.ntruss.com";
 
     public String createMigrationJob(String accessKey, String secretKey, NcpMigrationJob ncpMigrationJob) {
