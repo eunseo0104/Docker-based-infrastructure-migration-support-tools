@@ -28,6 +28,7 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk-ec2'
     implementation 'com.amazonaws:aws-java-sdk-s3'
     implementation 'com.amazonaws:aws-java-sdk-eks'
+    implementation 'com.amazonaws:aws-java-sdk-ecs'
     implementation 'com.amazonaws:aws-java-sdk-ecr'
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
     

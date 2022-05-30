@@ -49,7 +49,7 @@ public class AwsServiceMigrator {
 
         return AmazonEKSClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                .withRegion(Regions.valueOf(region))
+                .withRegion(Regions.valueOf(AwsRegion))
                 .build();
     }
 
@@ -60,7 +60,7 @@ public class AwsServiceMigrator {
 
         return AmazonECSClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                .withRegion(Regions.valueOf(region))
+                .withRegion(Regions.valueOf(AwsRegion))
                 .build();
     }
 
