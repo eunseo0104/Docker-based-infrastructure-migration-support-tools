@@ -1,6 +1,5 @@
 package docker;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
@@ -12,7 +11,6 @@ import org.json.simple.JSONObject;
 
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.Scanner;
 
 import static docker.NcpMigrator.makeSignature;
 
@@ -20,48 +18,41 @@ public class NcpObjectStorageMigrator {
 
     private static String objectMigrationApiUrl = "https://objectmigration.apigw.ntruss.com";
 
-    public String createMigrationJob(String accessKey, String secretKey, NcpMigrationJob ncpMigrationJob) {
+    public String createMigrationJob(String accessKey, String secretKey, NcpMigrationJob ncpMigrationJob, String region) {
 
         String uri = "/migration-api/v1/policy";
 
-        HashMap<String,String> hashMap = new HashMap<>();
-        HashMap<String,String> sourceHashMap = new HashMap<>();
-        HashMap<String,String> targetHashMap = new HashMap<>();
         NcpMigrationJobSource ncpMigrationJobSource = ncpMigrationJob.getSource();
         NcpMigrationJobTarget ncpMigrationJobTarget = ncpMigrationJob.getTarget();
 
-        sourceHashMap.put("bucketName", ncpMigrationJobSource.getBucketName());
-        sourceHashMap.put("sourceCspType", ncpMigrationJobSource.getSourceCspType());
-        sourceHashMap.put("accessKey", ncpMigrationJobSource.getAccessKey());
-        sourceHashMap.put("secretKey", ncpMigrationJobSource.getSecretKey());
-        sourceHashMap.put("regionName", ncpMigrationJobSource.getRegionName());
-        sourceHashMap.put("prefix", ncpMigrationJobSource.getPrefix());
-        JSONObject sourceJsonObject = new JSONObject(sourceHashMap);
+        String jsonInputString = "{\n" +
+                "  \"title\": \""+ ncpMigrationJob.getTitle() + "\",\n" +
+                "  \"source\": {\n" +
+                "  \"bucketName\": \""+ ncpMigrationJobSource.getBucketName() + "\",\n" +
+                "  \"sourceCspType\": \""+ ncpMigrationJobSource.getSourceCspType() + "\",\n" +
+                "  \"accessKey\": \""+ ncpMigrationJobSource.getAccessKey() + "\",\n" +
+                "  \"secretKey\": \""+ ncpMigrationJobSource.getSecretKey() + "\",\n" +
+                "  \"regionName\": \""+ ncpMigrationJobSource.getRegionName() + "\"\n" +
+                "  },\n" +
+                "  \"target\": {\n" +
+                "  \"bucketName\": \""+ ncpMigrationJobTarget.getBucketName() + "\"\n" +
+                "  }\n" +
+                "}" ;
 
-        targetHashMap.put("bucketName", ncpMigrationJobTarget.getBucketName());
-        targetHashMap.put("prefix", ncpMigrationJobTarget.getPrefix());
-        JSONObject targetJsonObject = new JSONObject(targetHashMap);
-
-        hashMap.put("title", ncpMigrationJob.getTitle());
-        hashMap.put("source", sourceJsonObject.toJSONString());
-        hashMap.put("target", targetJsonObject.toJSONString());
-        JSONObject migrationJsonObject = new JSONObject(hashMap);
-
-        String response = clientApiPostCall(accessKey, secretKey, uri, migrationJsonObject);
+        String response = clientApiPostCall(accessKey, secretKey, uri, jsonInputString, region);
         return ncpMigrationJob.getTitle();
     }
 
 
-    public String startMigrationJob(String accessKey, String secretKey, NcpMigrationJob ncpMigrationJob) {
+    public void startMigrationJob(String accessKey, String secretKey, NcpMigrationJob ncpMigrationJob, String region) {
 
         String title = ncpMigrationJob.getTitle();
         String uri = "/migration-api/v1/policy/" + title + "/start";
 
-        String response = clientApiPostCall(accessKey, secretKey, uri);
-        return ncpMigrationJob.getTitle();
+        String response = clientApiPostCall(accessKey, secretKey, uri, region);
     }
 
-    public String clientApiPostCall(String accessKey, String secretKey, String uri) {
+    public String clientApiPostCall(String accessKey, String secretKey, String uri, String region) {
 
         String timestamp = Long.toString(Instant.now().toEpochMilli());
         String body = "";
@@ -71,7 +62,9 @@ public class NcpObjectStorageMigrator {
             HttpPost postRequest = new HttpPost(objectMigrationApiUrl+uri); //Post 메소드 URL 생성
             postRequest.addHeader("x-ncp-apigw-timestamp", timestamp);
             postRequest.addHeader("x-ncp-iam-access-key", accessKey);
-            postRequest.addHeader("x-ncp-apigw-signature-v2", makeSignature(accessKey, secretKey, timestamp, "GET", uri));
+            postRequest.addHeader("x-ncp-apigw-signature-v2", makeSignature(accessKey, secretKey, timestamp, "POST", uri));
+            postRequest.addHeader("x-ncp-region_code", region);
+
 
             HttpResponse response = client.execute(postRequest);
 
@@ -90,7 +83,7 @@ public class NcpObjectStorageMigrator {
         return body;
     }
 
-    public String clientApiPostCall(String accessKey, String secretKey, String uri, JSONObject jsonObject) {
+    public String clientApiPostCall(String accessKey, String secretKey, String uri, String jsonInputString, String region) {
 
         String timestamp = Long.toString(Instant.now().toEpochMilli());
         String body = "";
@@ -100,9 +93,14 @@ public class NcpObjectStorageMigrator {
             HttpPost postRequest = new HttpPost(objectMigrationApiUrl+uri); //Post 메소드 URL 생성
             postRequest.addHeader("x-ncp-apigw-timestamp", timestamp);
             postRequest.addHeader("x-ncp-iam-access-key", accessKey);
-            postRequest.addHeader("x-ncp-apigw-signature-v2", makeSignature(accessKey, secretKey, timestamp, "GET", uri));
+            postRequest.addHeader("x-ncp-apigw-signature-v2", makeSignature(accessKey, secretKey, timestamp, "POST", uri));
+            postRequest.addHeader("x-ncp-region_code", region);
 
-            postRequest.setEntity((HttpEntity) jsonObject);
+            System.out.println(timestamp);
+            System.out.println(makeSignature(accessKey, secretKey, timestamp, "POST", uri));
+            System.out.println(jsonInputString);
+
+            postRequest.setEntity(new StringEntity(jsonInputString));
 
             HttpResponse response = client.execute(postRequest);
 
@@ -112,6 +110,7 @@ public class NcpObjectStorageMigrator {
                 body = handler.handleResponse(response);
             } else {
                 System.out.println("response is error : " + response.getStatusLine().getStatusCode());
+                System.out.println(response);
             }
 
         } catch (Exception e){
