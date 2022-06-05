@@ -105,10 +105,10 @@ public class AwsDockerMigrator {
         while((s=br.readLine())!=null)
                 System.out.println(s);
 
-	script = "/bin/bash & ";
+	script = "/bin/bash & docker login -u "+args[1]+" "+endpoint + " -p "+args[2];
 	
         for(int i=0; i<images.length; i++){
-            if(i!=0) script+=" & ";
+            script+=" & ";
 
             cmd[2] = "docker tag "+aws[4]+".dkr.ecr."+aws[3]+".amazonaws.com/"+aws[0]+":"+images[i]+" "+endpoint+"/"+images[i];
             System.out.println(cmd[2]);
