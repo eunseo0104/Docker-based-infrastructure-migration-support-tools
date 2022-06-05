@@ -153,6 +153,7 @@ public class Migrator {
 
         
         //10. Docker image Migration
+        String dockerImageMigrationScript;
         System.out.println("Are you sure you want to migrate AWS Docker image?(Y/N): ");
         while(true){
             String answer = scanner.nextLine();
@@ -166,11 +167,16 @@ public class Migrator {
 
                 System.out.println("Enter AWS Account id: ");
                 String awsAcountId = scanner.nextLine();
-
-                String[] ncpInfo = {ncpRegistryName, ncpAccessKey, ncpSecretKey};
+	
+                String[] ncpInfo = {ncpRegistryName, ncpAccessKey, ncpSecretKey};	
                 String[] awsInfo = {awsRepositoryName, awsAccessKey, awsSecretKey, region, awsAcountId};
                 awsDocker.migrateDocker(ncpInfo, awsInfo);
                 System.out.println("Image Migration Complete.");
+                
+                //getScript
+                dockerImageMigrationScript = awsDocker.getDockerImageScript();
+                System.out.println(dockerImageMigrationScript);
+                
                 break;
             }
             else if(answer.equals("N")){
@@ -181,6 +187,8 @@ public class Migrator {
                 System.out.println("(Y/N): ");
             }
         }
+        
+        
     }
 
     // ncp to aws 변환

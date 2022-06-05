@@ -14,8 +14,11 @@ import java.util.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-
+//aws to ncp
 public class AwsDockerMigrator {
+    
+    private static String script = "";
+	
     public void migrateDocker(String args[], String[] aws){
         //args[0]: registry name
         //args[1]: access key
@@ -35,7 +38,7 @@ public class AwsDockerMigrator {
         aws[3] = ""; //region
         aws[4] = ""; //account id
 	*/
-
+	
         AmazonECR ecr = BuildECRClient(aws[1], aws[2], Regions.valueOf(aws[3]));
         try{
             List<ImageIdentifier> imageIdentifier = getlistImageResult(ecr, aws);
@@ -102,20 +105,30 @@ public class AwsDockerMigrator {
         while((s=br.readLine())!=null)
                 System.out.println(s);
 
+	script = "/bin/bash & ";
+	
         for(int i=0; i<images.length; i++){
-            
+            if(i!=0) script+=" & ";
 
             cmd[2] = "docker tag "+aws[4]+".dkr.ecr."+aws[3]+".amazonaws.com/"+aws[0]+":"+images[i]+" "+endpoint+"/"+images[i];
             System.out.println(cmd[2]);
             p = Runtime.getRuntime().exec(cmd);
 
             cmd[2] = "docker push "+endpoint+"/"+images[i];
-
+	    
+	    //set docker pull script
+	    
+	    script +="docker pull "+endpoint+"/"+images[i];
+	    
             p = Runtime.getRuntime().exec(cmd);
             br = new BufferedReader(new InputStreamReader(p.getInputStream()));
             while((s=br.readLine())!=null)
                 System.out.println(s);
         }
+    }
+    
+    public String getDockerImageScript(){
+    	return script;
     }
 }
 
