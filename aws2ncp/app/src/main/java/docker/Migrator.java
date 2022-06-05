@@ -2,9 +2,6 @@ package docker;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.Instance;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.Bucket;
 
 import java.util.*;
 
@@ -13,8 +10,6 @@ public class Migrator {
     static Scanner scanner = new Scanner(System.in);
     static AwsMigrator awsMigrator = new AwsMigrator();
     static NcpMigrator ncpMigrator = new NcpMigrator();
-    static NcpObjectStorageMigrator ncpObjectStorageMigrator = new NcpObjectStorageMigrator();
-    static AwsObjectStorageMigrator awsObjectStorageMigrator = new AwsObjectStorageMigrator();
 
     public boolean migrate(String basedPlatformName, String targetPlatformName) throws Exception {
 
@@ -185,37 +180,6 @@ public class Migrator {
             else{
                 System.out.println("(Y/N): ");
             }
-        }
-
-        //11. Bucket Migration
-        System.out.println("Are you sure you want to migrate S3 Bucket?(Y/N): ");
-        while(true){
-            String answer = scanner.nextLine();
-            if(answer.equals("Y")) {
-                AmazonS3 amazonS3 = awsObjectStorageMigrator.BuildS3Client(awsAccessKey,awsSecretKey, Regions.valueOf(region));
-
-                List<Bucket> bucketList = awsObjectStorageMigrator.getBucketList(amazonS3);
-                printS3BucketList(bucketList);
-                String bucketName = getS3BucketInput(bucketList);
-
-                NcpMigrationJobSource ncpMigrationJobSource = new NcpMigrationJobSource(bucketName,"AWS", awsAccessKey, awsSecretKey, region, "");
-                NcpMigrationJobTarget ncpMigrationJobTarget = new NcpMigrationJobTarget(bucketName, "");
-
-                System.out.println("Enter Migration Job Title: ");
-                String title = scanner.nextLine();
-                NcpMigrationJob ncpMigrationJob = new NcpMigrationJob(title, ncpMigrationJobSource, ncpMigrationJobTarget);
-
-                ncpObjectStorageMigrator.createMigrationJob(ncpAccessKey, ncpSecretKey, ncpMigrationJob, region);
-                ncpObjectStorageMigrator.startMigrationJob(ncpAccessKey, ncpSecretKey, ncpMigrationJob, region);
-            }
-            else if(answer.equals("N")){
-                System.out.println("Complete.");
-                break;
-            }
-            else{
-                System.out.println("(Y/N): ");
-            }
-
         }
     }
 
@@ -561,35 +525,6 @@ public class Migrator {
                 int index = Integer.parseInt(scanner.nextLine());
 
                 return ncpServerProductList.get(index);
-
-                // 유효하지 않은 입력이라면
-            } catch(Exception e) {
-                System.out.println("유효하지 않은 입력입니다. 다시 입력해주세요.");
-            }
-        }
-    }
-
-    // S3 Bucket 출력
-    private static void printS3BucketList(List<Bucket> bucketList) {
-
-        System.out.println("Bucket List");
-
-        System.out.println("-----------------------------");
-        for(int i=0; i<bucketList.size(); i++) {
-            System.out.printf("|      %-20s |\n", i + " : " + bucketList.get(i).getName());
-        }
-        System.out.println("-----------------------------");
-    }
-
-    // NCP Region 입력
-    private static String getS3BucketInput(List<Bucket> bucketList) {
-
-        while(true) {
-            try {
-                System.out.println("Enter bucket number : ");
-                int index = Integer.parseInt(scanner.nextLine());
-
-                return bucketList.get(index).getName();
 
                 // 유효하지 않은 입력이라면
             } catch(Exception e) {
