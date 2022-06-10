@@ -308,12 +308,30 @@ public class AwsMigrator {
             keyNameList.add(keyPairInfo.getKeyName());
         }
 
-        // 사용자에게 출력
-        System.out.println(keyNameList);
 
-        // 사용자로부터 입력
-        System.out.println("");
-        awsServerInfo.keyName = scanner.nextLine();//"test_key";
+
+        // 사용자에게 출력
+        System.out.println("Key List");
+
+        System.out.println("-------------------");
+        for(int i=0; i<keyNameList.size(); i++) {
+            System.out.printf("|      %-11s |\n", i + " : " + keyNameList.get(i));
+        }
+        System.out.println("-------------------");
+
+        // Key Number 입력
+        while (true) {
+            try {
+                System.out.println("Key name number : ");
+                int index = Integer.parseInt(scanner.nextLine());
+
+                awsServerInfo.keyName= keyNameList.get(index);
+                break;
+                // 유효하지 않은 입력이라면
+            } catch (Exception e) {
+                System.out.println("유효하지 않은 입력입니다. 다시 입력해주세요.");
+            }
+        }
 
 
         //--------- SecurityGroups
@@ -326,10 +344,28 @@ public class AwsMigrator {
         }
 
         // 사용자에게 출력
-        System.out.println(securityGroupIdList);
+        System.out.println("Security Group Id List");
 
-        // 사용자로부터 입력
-        awsServerInfo.securityGroupId = scanner.nextLine();//"sg-0a0d3d63be3b062cc";
+        System.out.println("----------------------------");
+        for(int i=0; i<securityGroupIdList.size(); i++) {
+            System.out.printf("|      %-20s |\n", i + " : " + securityGroupIdList.get(i));
+        }
+        System.out.println("----------------------------");
+
+
+        // Security Group Number 입력
+        while (true) {
+            try {
+                System.out.println("Security group number : ");
+                int index = Integer.parseInt(scanner.nextLine());
+
+                awsServerInfo.securityGroupId= securityGroupIdList.get(index);
+                break;
+                // 유효하지 않은 입력이라면
+            } catch (Exception e) {
+                System.out.println("유효하지 않은 입력입니다. 다시 입력해주세요.");
+            }
+        }
 
         return awsServerInfo;
     }
