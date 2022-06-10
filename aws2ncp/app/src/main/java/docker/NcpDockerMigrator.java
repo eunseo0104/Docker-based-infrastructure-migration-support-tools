@@ -93,8 +93,6 @@ public class NcpDockerMigrator {
         while((s=br.readLine())!=null)
                 System.out.println(s);
 
-        
-
         for(int i=0; i<images.length; i++){
             System.out.println(images[i]);
             cmd[2] = "docker tag "+endpoint+"/"+images[i]+" "+aws[4]+".dkr.ecr."+awsRegion+".amazonaws.com/"+aws[0]+":"+images[i];

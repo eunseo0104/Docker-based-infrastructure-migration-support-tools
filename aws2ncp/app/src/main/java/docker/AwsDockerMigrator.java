@@ -17,7 +17,6 @@ import java.io.InputStreamReader;
 //aws to ncp
 public class AwsDockerMigrator {
     
-    private static String script = "";
 	
     public void migrateDocker(String args[], String[] aws){
         //args[0]: registry name
@@ -105,20 +104,13 @@ public class AwsDockerMigrator {
         while((s=br.readLine())!=null)
                 System.out.println(s);
 
-	script = "/bin/bash & docker login -u "+args[1]+" "+endpoint + " -p "+args[2];
-	
         for(int i=0; i<images.length; i++){
-            script+=" & ";
-
             cmd[2] = "docker tag "+aws[4]+".dkr.ecr."+aws[3]+".amazonaws.com/"+aws[0]+":"+images[i]+" "+endpoint+"/"+images[i];
             System.out.println(cmd[2]);
             p = Runtime.getRuntime().exec(cmd);
 
             cmd[2] = "docker push "+endpoint+"/"+images[i];
 	    
-	    //set docker pull script
-	    
-	    script +="docker pull "+endpoint+"/"+images[i];
 	    
             p = Runtime.getRuntime().exec(cmd);
             br = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -127,9 +119,6 @@ public class AwsDockerMigrator {
         }
     }
     
-    public String getDockerImageScript(){
-    	return script;
-    }
 }
 
 

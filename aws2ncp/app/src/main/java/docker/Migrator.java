@@ -153,7 +153,6 @@ public class Migrator {
 
         
         //10. Docker image Migration
-        String dockerImageMigrationScript;
         System.out.println("Are you sure you want to migrate AWS Docker image?(Y/N): ");
         while(true){
             String answer = scanner.nextLine();
@@ -173,10 +172,6 @@ public class Migrator {
                 awsDocker.migrateDocker(ncpInfo, awsInfo);
                 System.out.println("Image Migration Complete.");
                 
-                //getScript
-                dockerImageMigrationScript = awsDocker.getDockerImageScript();
-                System.out.println(dockerImageMigrationScript);
-                
                 break;
             }
             else if(answer.equals("N")){
@@ -188,6 +183,13 @@ public class Migrator {
             }
         }
         
+        //11. kubernetes service
+   	AwsServiceMigrator awsServiceMigrator = new AwsServiceMigrator();
+        
+        System.out.println("Enter clusterName: ");
+        String clusterName = scanner.nextLine();
+        
+        awsServiceMigrator.ks_a2n(awsAccessKey, awsSecretKey, ncpAccessKey, ncpSecretKey, clusterName, region);
         
     }
 
@@ -282,6 +284,13 @@ public class Migrator {
 			System.out.println("(Y/N): ");
 		}
 	}
+	//10. Kubernetes service
+   	NcpServiceMigrator ncpServiceMigrator = new NcpServiceMigrator();
+   
+   	System.out.println("Enter clusterName: ");
+        String clusterName = scanner.nextLine();
+   
+   	ncpServiceMigrator.ks_n2a(ncpAccessKey, ncpSecretKey, awsAccessKey, awsSecretKey, clusterName);
     }
 
     // AWS Region 리스트 출력
