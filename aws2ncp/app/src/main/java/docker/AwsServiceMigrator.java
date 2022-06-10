@@ -25,7 +25,8 @@ public class AwsServiceMigrator {
     private String AwsRegion = "";
 
     public void ks_a2n(String aws_accessKey, String aws_secretKey, String ncp_accessKey, String ncp_secretKey, String clusterName, String region) throws Exception{
-	AwsRegion = region;
+	AwsRegion = region;//.toLowerCase().replace("_", "-");
+	System.out.println(AwsRegion);
         String clusterList = listEKSCluster(aws_accessKey, aws_secretKey);
         NcpServiceMigrator ncpServiceMigrator = new NcpServiceMigrator();
         
