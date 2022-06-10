@@ -346,11 +346,11 @@ public class AwsMigrator {
         // 사용자에게 출력
         System.out.println("Security Group Id List");
 
-        System.out.println("----------------------------");
+        System.out.println("-------------------------------------");
         for(int i=0; i<securityGroupIdList.size(); i++) {
-            System.out.printf("|      %-20s |\n", i + " : " + securityGroupIdList.get(i));
+            System.out.printf("|      %-30s |\n", i + " : " + securityGroupIdList.get(i));
         }
-        System.out.println("----------------------------");
+        System.out.println("-------------------------------------");
 
 
         // Security Group Number 입력

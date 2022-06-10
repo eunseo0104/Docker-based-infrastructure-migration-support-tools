@@ -40,7 +40,7 @@ public class NcpServiceMigrator {
     private static String nksApiUrl = "https://nks.apigw.ntruss.com";
 
 
-    public void ks_n2a(String ncp_accessKey, String ncp_secretKey, String aws_accessKey, String aws_secretKey, String clusterName) throws Exception {
+    public void ks_n2a(String ncp_accessKey, String ncp_secretKey, String aws_accessKey, String aws_secretKey, String clusterName, String region) throws Exception {
 
         String clusterList = getClusterList(ncp_accessKey, ncp_secretKey);
         AwsServiceMigrator awsServiceMigrator = new AwsServiceMigrator();
@@ -50,7 +50,7 @@ public class NcpServiceMigrator {
         subnetID[1] = "subnet-acaa10f3";
 
         if(clusterList.contains(clusterName))
-            awsServiceMigrator.createEKSCluster(aws_accessKey, aws_secretKey, subnetID, clusterName);
+            awsServiceMigrator.createEKSCluster(aws_accessKey, aws_secretKey, subnetID, clusterName, region);
 
     }
 

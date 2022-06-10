@@ -25,9 +25,8 @@ public class AwsServiceMigrator {
     private String AwsRegion = "";
 
     public void ks_a2n(String aws_accessKey, String aws_secretKey, String ncp_accessKey, String ncp_secretKey, String clusterName, String region) throws Exception{
-	AwsRegion = region;//.toLowerCase().replace("_", "-");
-	System.out.println(AwsRegion);
-        String clusterList = listEKSCluster(aws_accessKey, aws_secretKey);
+
+        String clusterList = listEKSCluster(aws_accessKey, aws_secretKey, region);
         NcpServiceMigrator ncpServiceMigrator = new NcpServiceMigrator();
         
         
@@ -45,12 +44,13 @@ public class AwsServiceMigrator {
             ncpServiceMigrator.createCluster(ncp_accessKey, ncp_secretKey, clusterName);
     }
 
-    public AmazonEKS BuildEKSClient(String accessKey, String secretKey){
+    public AmazonEKS BuildEKSClient(String accessKey, String secretKey, String region){
         BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
 
+        System.out.println(AwsRegion);
         return AmazonEKSClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                .withRegion(Regions.valueOf(AwsRegion))
+                .withRegion(Regions.valueOf(region))
                 .build();
     }
 
@@ -65,9 +65,9 @@ public class AwsServiceMigrator {
                 .build();
     }
 
-    public void createEKSCluster(String accessKey, String secretKey, String[] subnetID, String clusterName){
+    public void createEKSCluster(String accessKey, String secretKey, String[] subnetID, String clusterName, String region){
 	AwsServiceMigrator awsServiceMigrator = new AwsServiceMigrator();
-        AmazonEKS amazonEKS = awsServiceMigrator.BuildEKSClient(accessKey, secretKey);
+        AmazonEKS amazonEKS = awsServiceMigrator.BuildEKSClient(accessKey, secretKey, region);
         VpcConfigRequest vpcConfigRequest = new VpcConfigRequest();
         vpcConfigRequest.withSubnetIds(subnetID);
 
@@ -102,10 +102,10 @@ public class AwsServiceMigrator {
     }
 
 
-    public String listEKSCluster(String accessKey, String secretKey){
+    public String listEKSCluster(String accessKey, String secretKey, String region){
 
         AwsServiceMigrator awsServiceMigrator = new AwsServiceMigrator();
-        AmazonEKS amazonEKS = awsServiceMigrator.BuildEKSClient(accessKey, secretKey);
+        AmazonEKS amazonEKS = awsServiceMigrator.BuildEKSClient(accessKey, secretKey, region);
 
         ListClustersRequest request = new ListClustersRequest();
         ListClustersResult listClustersResult = amazonEKS.listClusters(request);

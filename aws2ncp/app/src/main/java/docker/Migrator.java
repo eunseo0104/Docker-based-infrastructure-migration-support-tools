@@ -1,4 +1,5 @@
 package docker;
+import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.Instance;
@@ -230,6 +231,8 @@ public class Migrator {
 
             // aws 키 입력
             KeyPair awsKeyPair = getAwsKeyInput();
+            awsAccessKey = awsKeyPair.getAccessKey();
+            awsSecretKey = awsKeyPair.getSecretKey();
 
             // 키로 클라이언트 생성 및 검증
             amazonEC2Client = buildEc2Client(awsKeyPair.getAccessKey(), awsKeyPair.getSecretKey(), region);
@@ -290,7 +293,7 @@ public class Migrator {
    	System.out.println("Enter clusterName: ");
         String clusterName = scanner.nextLine();
    
-   	ncpServiceMigrator.ks_n2a(ncpAccessKey, ncpSecretKey, awsAccessKey, awsSecretKey, clusterName);
+   	ncpServiceMigrator.ks_n2a(ncpAccessKey, ncpSecretKey, awsAccessKey, awsSecretKey, clusterName, region);
     }
 
     // AWS Region 리스트 출력
